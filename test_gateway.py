@@ -169,19 +169,44 @@ def test_chat_prompt_validation():
     print("PASS: oversized prompt rejected")
 
 
+
 def test_health_routes():
+    from types import SimpleNamespace
+
     live = client.get("/health/live")
 
     assert live.status_code == 200
     assert live.json()["status"] == "alive"
 
-    ready = client.get("/health/ready")
+    class MockAsyncClient:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc_value, traceback):
+            pass
+
+        async def get(self, url):
+            return SimpleNamespace(
+                status_code=200,
+                json=lambda: {
+                    "models": [
+                        {"name": "llama3.2:1b"}
+                    ]
+                },
+            )
+
+    with patch(
+        "app.main.httpx.AsyncClient",
+        return_value=MockAsyncClient(),
+    ):
+        ready = client.get("/health/ready")
 
     assert ready.status_code == 200
     assert ready.json()["status"] == "ready"
 
     print("PASS: liveness endpoint")
     print("PASS: readiness endpoint")
+
 
 
 if __name__ == "__main__":

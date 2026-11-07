@@ -1,0 +1,43 @@
+
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install httpx
+
+      - name: Compile application
+        run: |
+          python -m compileall -q app
+
+      - name: Run test suites
+        env:
+          GEMINI_API_KEY: ""
+          GATEWAY_API_KEY: "ci-test-gateway-key-12345678901234567890"
+        run: |
+          python test_circuit_breaker.py
+          python test_retries.py
+          python test_concurrency.py
+          python test_cancellation.py
+          python test_retry_circuit.py
+          python test_gateway.py
