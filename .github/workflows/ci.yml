@@ -32,7 +32,7 @@ jobs:
 
       - name: Run test suites
         env:
-          GEMINI_API_KEY: ""
+          GEMINI_API_KEY: "ci-dummy-key-for-tests"
           GATEWAY_API_KEY: "ci-test-gateway-key-12345678901234567890"
         run: |
           python test_circuit_breaker.py
