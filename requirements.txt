@@ -4,3 +4,4 @@ uvicorn[standard]
 litellm
 python-dotenv
 prometheus-client
+httpx
