@@ -37,43 +37,32 @@ Prometheus and Grafana provide monitoring and visibility into gateway performanc
 - Automated tests for retries, circuit breaking, concurrency, cancellation, authentication, and API behavior.
 - GitHub Actions CI workflow.
 
+
 ## Architecture
 
-```text
-                  Client Application
-                          |
-                          v
-                  FastAPI Gateway
-                          |
-             +------------+------------+
-             |                         |
-             v                         v
-       API Authentication         Rate Limiter
-             |                         |
-             +------------+------------+
-                          |
-                          v
-                    LLM Router
-                          |
-                          v
-                    Gemini Provider
-                          |
-                 +--------+--------+
-                 |                 |
-              Success            Failure
-                 |                 |
-                 v                 v
-              Response       Retry Mechanism
-                                   |
-                            Circuit Breaker
-                                   |
-                                   v
-                            Ollama Fallback
-                                   |
-                                   v
-                                Response
+```mermaid
+flowchart TD
+    A[Client Application] --> B[FastAPI Gateway]
+    B --> C[API Key Authentication]
+    C --> D[IP-Based Rate Limiter]
+    D --> E[Request Validation]
+    E --> F[LLM Router]
 
-       Prometheus <---- Gateway Metrics ----> Grafana
+    F --> G[Gemini Provider]
+    G --> H{Request Successful?}
+
+    H -->|Yes| I[Return Response]
+    H -->|No| J[Retry Mechanism]
+
+    J --> K{Retries Exhausted?}
+    K -->|No| G
+    K -->|Yes| L[Circuit Breaker]
+
+    L --> M[Ollama Fallback]
+    M --> I
+
+    B --> N[Prometheus Metrics]
+    N --> O[Grafana Dashboard]
 ```
 
 ## Technology Stack
