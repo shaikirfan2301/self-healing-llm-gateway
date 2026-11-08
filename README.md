@@ -48,21 +48,22 @@ flowchart TD
     D --> E[Request Validation]
     E --> F[LLM Router]
 
-    F --> G[Gemini Provider]
-    G --> H{Request Successful?}
+    F --> G{Gemini Circuit Breaker}
+    G -->|CLOSED or HALF_OPEN probe allowed| H[Gemini Provider]
+    G -->|OPEN| M[Ollama Fallback]
 
-    H -->|Yes| I[Return Response]
-    H -->|No| J[Retry Mechanism]
+    H --> I{Request Successful?}
+    I -->|Yes| N[Return Response]
+    I -->|No| J[Retry Mechanism]
 
     J --> K{Retries Exhausted?}
-    K -->|No| G
-    K -->|Yes| L[Circuit Breaker]
+    K -->|No| H
+    K -->|Yes| M
 
-    L --> M[Ollama Fallback]
-    M --> I
+    M --> N
 
-    B --> N[Prometheus Metrics]
-    N --> O[Grafana Dashboard]
+    B --> O[Prometheus Metrics]
+    O --> P[Grafana Dashboard]
 ```
 
 ## Technology Stack
